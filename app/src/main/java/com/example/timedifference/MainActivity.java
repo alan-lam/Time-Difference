@@ -1,14 +1,12 @@
 package com.example.timedifference;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,25 +53,54 @@ public class MainActivity extends AppCompatActivity {
 
         if (startHour > 12 || startHour < 1 || endHour < 1 || endHour > 12) {
             Toast.makeText(this, "Enter hour between 1 and 12", Toast.LENGTH_SHORT).show();
+            return;
         }
         else if (startMinute > 59 || endMinute > 59) {
             Toast.makeText(this, "Enter minutes between 0 and 59", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        /* 11:00 PM - 1:00 AM -> 11:00 PM - 13:00 AM or 11:00 AM - 1:00 PM -> 11:00 AM - 13:00 PM*/
+        /* Deal with cases like 11:00 PM - 1:00 AM */
         if ((startPMButton.isChecked() && endAMButton.isChecked()) || (startAMButton.isChecked() && endPMButton.isChecked())) {
-            endHour += 12;
+            /* Deal with cases like 11:58 AM - 12:00 PM */
+            if (endHour != 12) {
+                endHour += 12;
+            }
         }
 
-        /* 12:34 PM - 1:02 PM -> 12:34 PM - 12:62 PM (28 minutes) */
-        if (endMinute < startMinute) {
-            endMinute += 60;
-            endHour -= 1;
+        /* Deal with cases like 11:58 AM - 12:00 AM */
+        /* Deal with cases like 12:46 PM - 2:14 PM */
+        if (startHour == 12) {
+            if (startAMButton.isChecked()) {
+                startHour = 0;
+            }
+            else if (startPMButton.isChecked() && endPMButton.isChecked()) {
+                startHour = 0;
+            }
+        }
+        else if (endHour == 12) {
+            if (endAMButton.isChecked()) {
+                endHour = 0;
+            }
+            else if (startPMButton.isChecked() && endPMButton.isChecked()) {
+                endHour = 0;
+            }
         }
 
-        int hourDifference = endHour - startHour;
-        int minuteDifference = endMinute - startMinute;
+        /* Convert to minutes */
+        int startTime = startHour*60 + startMinute;
+        int endTime = endHour*60 + endMinute;
 
+        int difference = endTime - startTime;
+
+        if (difference < 0) {
+            difference += 1440;
+        }
+
+        int displayHour = difference/60;
+        int displayMinute = difference % 60;
+
+        displayTextView.setText(displayHour + " hours, " + displayMinute + " minutes");
     }
 
     public void clear(View view) {
@@ -81,5 +108,7 @@ public class MainActivity extends AppCompatActivity {
         startMinuteEditText.setText("");
         endHourEditText.setText("");
         endMinuteEditText.setText("");
+        displayTextView.setText("");
+        startHourEditText.requestFocus();
     }
 }

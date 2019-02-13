@@ -1,4 +1,4 @@
-# TimeDifferenceAndroid
+# Time Difference
 
 An Android app that calculates and displays the difference between two times
 
